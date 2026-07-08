@@ -25,17 +25,24 @@ app.use(cors({
     credentials:true
 }))
 
-app.use(session({
-    secret:process.env.SESSION_SECRET as string,
-    resave:false,
-    saveUninitialized:false,
-    cookie:{maxAge:1000*60*60*24*7},
-    store:MongoStore.create({
-        mongoUrl:process.env.MONGODB_URL as string,
-        collectionName:'session'
+// 1. Tell Express to trust reverse proxies (Vercel/Render/Heroku etc.)
+app.set('trust proxy', 1);
 
+// 2. Update your session config
+app.use(session({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        secure: true,      // Required for cross-site cookie transfers
+        sameSite: 'none'   // Allows cookie to cross from backend domain to frontend domain
+    },
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URL as string,
+        collectionName: 'session'
     })
-}))
+}));
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
