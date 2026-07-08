@@ -15,16 +15,30 @@ const ThumbnailRoutes_1 = __importDefault(require("./routes/ThumbnailRoutes"));
 const UserRouter_js_1 = __importDefault(require("./routes/UserRouter.js"));
 (0, db_1.default)();
 const app = (0, express_1.default)();
+const isProduction = process.env.NODE_ENV === 'production';
 // Middleware
 app.use((0, cors_1.default)({
-    origin: ['http://localhost:5173', 'http://localhost:3000/'],
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5173/',
+        'http://localhost:3000',
+        'http://localhost:3000/',
+        'https://thumbnail-beta-three.vercel.app'
+    ],
     credentials: true
 }));
+// 1. Tell Express to trust reverse proxies (Vercel/Render/Heroku etc.)
+app.set('trust proxy', 1);
+// 2. Update your session config
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 * 7 },
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        secure: isProduction, // Set to true only in production (HTTPS)
+        sameSite: isProduction ? 'none' : 'lax' // Allows cross-origin in dev (lax), none in production (HTTPS)
+    },
     store: connect_mongo_1.default.create({
         mongoUrl: process.env.MONGODB_URL,
         collectionName: 'session'

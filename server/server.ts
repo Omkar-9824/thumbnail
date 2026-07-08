@@ -19,10 +19,18 @@ declare module 'express-session'{
 connectDB()
 const app = express();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Middleware
 app.use(cors({
-    origin:['http://localhost:5173','http://localhost:3000/', 'https://thumbnail-beta-three.vercel.app'],
-    credentials:true
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5173/',
+        'http://localhost:3000',
+        'http://localhost:3000/',
+        'https://thumbnail-beta-three.vercel.app'
+    ],
+    credentials: true
 }))
 
 // 1. Tell Express to trust reverse proxies (Vercel/Render/Heroku etc.)
@@ -35,8 +43,8 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7,
-        secure: true,      // Required for cross-site cookie transfers
-        sameSite: 'none'   // Allows cookie to cross from backend domain to frontend domain
+        secure: isProduction,      // Set to true only in production (HTTPS)
+        sameSite: isProduction ? 'none' : 'lax'   // Allows cross-origin in dev (lax), none in production (HTTPS)
     },
     store: MongoStore.create({
         mongoUrl: process.env.MONGODB_URL as string,

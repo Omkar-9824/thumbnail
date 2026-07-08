@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 
 const protect = async (req: Request, res: Response, next: NextFunction) => {
-    const { isLoggedIn, userId } = req.session;
-
-    // Check if NOT logged in OR if userId is missing
-    if (!isLoggedIn || !userId) { 
+    // Check if req.session exists and has valid login credentials
+    if (!req.session || !req.session.isLoggedIn || !req.session.userId) { 
         return res.status(401).json({ message: 'You are not logged in' });
     }
 

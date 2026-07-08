@@ -86,6 +86,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          setUser(null);
+          setIsLoggedIn(false);
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
+  }, []);
+
+  useEffect(() => {
     (async () => {
       await fetchUser();
     })();

@@ -18,14 +18,20 @@ const registerUser = async (req, res) => {
         const newUser = new User_1.default({ name, email, password: hashedPassword });
         await newUser.save();
         req.session.isLoggedIn = true;
-        req.session.userId = newUser._id;
-        return res.json({
-            message: 'Account created successfully',
-            user: {
-                _id: newUser._id,
-                name: newUser.name,
-                email: newUser.email
+        req.session.userId = newUser._id.toString();
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: 'Session initialization failed' });
             }
+            return res.json({
+                message: 'Account created successfully',
+                user: {
+                    _id: newUser._id,
+                    name: newUser.name,
+                    email: newUser.email
+                }
+            });
         });
     }
     catch (error) {
@@ -47,14 +53,20 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
         req.session.isLoggedIn = true;
-        req.session.userId = user._id;
-        return res.json({
-            message: 'Login successfully',
-            user: {
-                _id: user._id,
-                name: user.name,
-                email: user.email
+        req.session.userId = user._id.toString();
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: 'Session initialization failed' });
             }
+            return res.json({
+                message: 'Login successfully',
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email
+                }
+            });
         });
     }
     catch (error) {
